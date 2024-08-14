@@ -16,20 +16,21 @@
             align-items: center;
             justify-content: flex-start;
             height: 100vh;
+            box-sizing: border-box;
         }
 
         h1 {
             font-size: 24px;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             text-align: center;
+            width: 100%;
         }
 
         #container {
             display: flex;
-            flex-direction: column;
             width: 100%;
-            max-width: 800px;
-            height: 80vh;
+            max-width: 1400px;
+            height: calc(100vh - 80px); /* Adjusted height to allow space for the title */
             background-color: #2d2d2d;
             border-radius: 8px;
             overflow: hidden;
@@ -38,9 +39,11 @@
         #file-explorer-container {
             display: flex;
             flex-direction: column;
+            width: 300px; /* Fixed width for folder area */
             padding: 10px;
             background-color: #252525;
             overflow-y: auto;
+            flex-shrink: 0; /* Prevent shrinking */
         }
 
         #file-explorer-header {
@@ -63,6 +66,7 @@
             border: none;
             border-radius: 4px;
             font-size: 14px;
+            margin-left: 10px;
         }
 
         #file-explorer {
@@ -80,6 +84,14 @@
             justify-content: center;
             align-items: center;
             background-color: #2d2d2d;
+            overflow: auto;
+        }
+
+        #preview-content {
+            max-width: 100%;
+            max-height: 100%;
+            overflow: hidden;
+            object-fit: contain; /* Ensures image scaling */
         }
 
         .folder {
@@ -119,18 +131,17 @@
             background-color: #3a3a3a;
         }
 
-        #preview-content {
-            max-width: 100%;
-            max-height: 100%;
-        }
-
         @media (max-width: 768px) {
             #container {
                 flex-direction: column;
                 height: auto;
             }
 
-            #file-explorer-container,
+            #file-explorer-container {
+                width: 100%;
+                height: auto;
+            }
+
             #preview-area {
                 width: 100%;
                 height: auto;
