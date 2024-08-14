@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Explorer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        #file-explorer {
+            width: 300px;
+            padding: 20px;
+            background-color: #252525;
+            overflow-y: auto;
+        }
+
+        #preview-area {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #2d2d2d;
+        }
+
+        .folder {
+            cursor: pointer;
+            padding: 5px 0;
+        }
+
+        .file {
+            cursor: pointer;
+            padding: 5px 0;
+        }
+
+        .folder::before {
+            content: "📁";
+            margin-right: 5px;
+        }
+
+        .file::before {
+            content: "📄";
+            margin-right: 5px;
+        }
+
+        .selected {
+            background-color: #3a3a3a;
+        }
+
+        #preview-content {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="file-explorer"></div>
+    <div id="preview-area">
+        <div id="preview-content"></div>
+    </div>
+
+    <script>
+        const fileExplorer = document.getElementById('file-explorer');
+        const previewContent = document.getElementById('preview-content');
+
+        async function fetchGitHubContents(path = '') {
+            const repo = 'abouris/viewer'; // Replace with your GitHub username and repository name
+            const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
+
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            return data;
+        }
+
+        async function createFileExplorer(path = '', parentElement) {
+            const items = await fetchGitHubContents(path);
+
+            items.forEach(item => {
+                const element = document.createElement('div');
+                element.textContent = item.name;
+                element.className = item.type === 'dir' ? 'folder' : 'file';
+
+                if (item.type === 'dir') {
+                    element.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        element.classList.toggle('open');
+
+                        if (element.classList.contains('open')) {
+                            const childContainer = document.createElement('div');
+                            element.appendChild(childContainer);
+                            await createFileExplorer(item.path, childContainer);
+                        } else {
+                            element.innerHTML = element.textContent;
+                        }
+                    });
+                } else {
+                    element.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                        element.classList.add('selected');
+                        previewFile(item.path);
+                    });
+                }
+
+                parentElement.appendChild(element);
+            });
+        }
+
+        function previewFile(filePath) {
+            const fileUrl = `https://raw.githubusercontent.com/abouris/viewer/main/${filePath}`; // Update with your repository details
+            const extension = filePath.split('.').pop().toLowerCase();
+            let content;
+
+            switch(extension) {
+                case 'jpg':
+                case 'png':
+                    content = `<img src="${fileUrl}" alt="${filePath}" id="preview-content">`;
+                    break;
+                case 'mp3':
+                case 'wav':
+                    content = `<audio controls src="${fileUrl}" id="preview-content">Your browser does not support the audio element.</audio>`;
+                    break;
+                case 'mp4':
+                    content = `<video controls src="${fileUrl}" id="preview-content">Your browser does not support the video element.</video>`;
+                    break;
+                default:
+                    content = `<p>No preview available for ${filePath}</p>`;
+            }
+
+            previewContent.innerHTML = content;
+        }
+
+        createFileExplorer('', fileExplorer);
+    </script>
+</body>
+</html>
