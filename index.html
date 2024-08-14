@@ -102,21 +102,27 @@
                     const element = document.createElement('div');
                     element.textContent = item.name;
                     element.className = 'folder';
+                    let isExpanded = false; // Track the expanded state
+
                     element.addEventListener('click', async (e) => {
                         e.stopPropagation();
-                        element.classList.toggle('open');
 
-                        if (element.classList.contains('open')) {
+                        if (isExpanded) {
+                            // Collapse folder and remove all child elements
+                            while (element.lastChild !== element.firstChild) {
+                                element.removeChild(element.lastChild);
+                            }
+                            isExpanded = false;
+                        } else {
+                            // Expand folder and add child elements
                             const childContainer = document.createElement('div');
                             childContainer.style.paddingLeft = '20px';
                             element.appendChild(childContainer);
                             await createFileExplorer(item.path, childContainer);
-                        } else {
-                            while (element.childElementCount > 1) {
-                                element.removeChild(element.lastChild);
-                            }
+                            isExpanded = true;
                         }
                     });
+
                     parentElement.appendChild(element);
                 } else if (!isRoot) {
                     const element = document.createElement('div');
