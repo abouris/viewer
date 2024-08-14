@@ -34,6 +34,7 @@
         .folder {
             cursor: pointer;
             padding: 5px 0;
+            color: #ffd700; /* Gold color for folders */
         }
 
         .file {
@@ -49,6 +50,18 @@
         .file::before {
             content: "📄";
             margin-right: 5px;
+        }
+
+        .file.audio {
+            color: #00ff00; /* Green color for audio files */
+        }
+
+        .file.image {
+            color: #1e90ff; /* Blue color for image files */
+        }
+
+        .file.video {
+            color: #ff4500; /* Orange color for video files */
         }
 
         .selected {
@@ -72,7 +85,7 @@
         const previewContent = document.getElementById('preview-content');
 
         async function fetchGitHubContents(path = '') {
-            const repo = 'abouris/viewer'; // Replace with your GitHub username and repository name
+            const repo = 'abouris/viewer';
             const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
 
             const response = await fetch(apiUrl);
@@ -81,28 +94,32 @@
             return data;
         }
 
-        async function createFileExplorer(path = '', parentElement) {
+        async function createFileExplorer(path = '', parentElement, isRoot = false) {
             const items = await fetchGitHubContents(path);
 
             items.forEach(item => {
                 const element = document.createElement('div');
                 element.textContent = item.name;
-                element.className = item.type === 'dir' ? 'folder' : 'file';
-
+                
                 if (item.type === 'dir') {
+                    element.className = 'folder';
                     element.addEventListener('click', async (e) => {
                         e.stopPropagation();
                         element.classList.toggle('open');
 
                         if (element.classList.contains('open')) {
                             const childContainer = document.createElement('div');
+                            childContainer.style.paddingLeft = '20px';
                             element.appendChild(childContainer);
                             await createFileExplorer(item.path, childContainer);
                         } else {
-                            element.innerHTML = element.textContent;
+                            while (element.childElementCount > 1) {
+                                element.removeChild(element.lastChild);
+                            }
                         }
                     });
-                } else {
+                } else if (!isRoot) {
+                    element.className = `file ${getFileTypeClass(item.name)}`;
                     element.addEventListener('click', (e) => {
                         e.stopPropagation();
                         document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
@@ -115,8 +132,25 @@
             });
         }
 
+        function getFileTypeClass(fileName) {
+            const extension = fileName.split('.').pop().toLowerCase();
+
+            switch(extension) {
+                case 'mp3':
+                case 'wav':
+                    return 'audio';
+                case 'jpg':
+                case 'png':
+                    return 'image';
+                case 'mp4':
+                    return 'video';
+                default:
+                    return '';
+            }
+        }
+
         function previewFile(filePath) {
-            const fileUrl = `https://raw.githubusercontent.com/abouris/viewer/main/${filePath}`; // Update with your repository details
+            const fileUrl = `https://raw.githubusercontent.com/abouris/viewer/main/${filePath}`;
             const extension = filePath.split('.').pop().toLowerCase();
             let content;
 
@@ -139,7 +173,7 @@
             previewContent.innerHTML = content;
         }
 
-        createFileExplorer('', fileExplorer);
+        createFileExplorer('', fileExplorer, true);
     </script>
 </body>
 </html>
