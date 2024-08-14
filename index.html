@@ -10,16 +10,67 @@
             background-color: #1e1e1e;
             color: #e0e0e0;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
             height: 100vh;
         }
 
-        #file-explorer {
-            width: 300px;
-            padding: 20px;
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 800px;
+            height: 80vh;
+            background-color: #2d2d2d;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #file-explorer-container {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
             background-color: #252525;
             overflow-y: auto;
+        }
+
+        #file-explorer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #file-explorer-header h2 {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        #collapse-all {
+            cursor: pointer;
+            background-color: #444;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        #file-explorer {
+            flex-grow: 1;
+            padding: 10px;
+            background-color: #252525;
+            overflow-y: auto;
+            border-radius: 4px;
         }
 
         #preview-area {
@@ -72,17 +123,40 @@
             max-width: 100%;
             max-height: 100%;
         }
+
+        @media (max-width: 768px) {
+            #container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            #file-explorer-container,
+            #preview-area {
+                width: 100%;
+                height: auto;
+            }
+        }
     </style>
 </head>
 <body>
-    <div id="file-explorer"></div>
-    <div id="preview-area">
-        <div id="preview-content"></div>
+    <h1>File Explorer</h1>
+    <div id="container">
+        <div id="file-explorer-container">
+            <div id="file-explorer-header">
+                <h2>Folders</h2>
+                <button id="collapse-all">Collapse All</button>
+            </div>
+            <div id="file-explorer"></div>
+        </div>
+        <div id="preview-area">
+            <div id="preview-content"></div>
+        </div>
     </div>
 
     <script>
         const fileExplorer = document.getElementById('file-explorer');
         const previewContent = document.getElementById('preview-content');
+        const collapseAllButton = document.getElementById('collapse-all');
 
         async function fetchGitHubContents(path = '') {
             const repo = 'abouris/viewer';
@@ -102,19 +176,17 @@
                     const element = document.createElement('div');
                     element.textContent = item.name;
                     element.className = 'folder';
-                    let isExpanded = false; // Track the expanded state
+                    let isExpanded = false;
 
                     element.addEventListener('click', async (e) => {
                         e.stopPropagation();
 
                         if (isExpanded) {
-                            // Collapse folder and remove all child elements
                             while (element.lastChild !== element.firstChild) {
                                 element.removeChild(element.lastChild);
                             }
                             isExpanded = false;
                         } else {
-                            // Expand folder and add child elements
                             const childContainer = document.createElement('div');
                             childContainer.style.paddingLeft = '20px';
                             element.appendChild(childContainer);
@@ -179,6 +251,17 @@
 
             previewContent.innerHTML = content;
         }
+
+        function collapseAllFolders() {
+            const folders = document.querySelectorAll('.folder');
+            folders.forEach(folder => {
+                while (folder.lastChild !== folder.firstChild) {
+                    folder.removeChild(folder.lastChild);
+                }
+            });
+        }
+
+        collapseAllButton.addEventListener('click', collapseAllFolders);
 
         createFileExplorer('', fileExplorer, true);
     </script>
