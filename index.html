@@ -30,7 +30,6 @@
             align-items: center;
             background-color: #2d2d2d;
         }
-        
 
         .folder {
             cursor: pointer;
@@ -99,10 +98,9 @@
             const items = await fetchGitHubContents(path);
 
             items.forEach(item => {
-                const element = document.createElement('div');
-                element.textContent = item.name;
-                
                 if (item.type === 'dir') {
+                    const element = document.createElement('div');
+                    element.textContent = item.name;
                     element.className = 'folder';
                     element.addEventListener('click', async (e) => {
                         e.stopPropagation();
@@ -119,7 +117,10 @@
                             }
                         }
                     });
+                    parentElement.appendChild(element);
                 } else if (!isRoot) {
+                    const element = document.createElement('div');
+                    element.textContent = item.name;
                     element.className = `file ${getFileTypeClass(item.name)}`;
                     element.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -127,9 +128,8 @@
                         element.classList.add('selected');
                         previewFile(item.path);
                     });
+                    parentElement.appendChild(element);
                 }
-
-                parentElement.appendChild(element);
             });
         }
 
